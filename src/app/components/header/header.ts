@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-header',
-  imports: [],
+  imports: [ TranslateModule],
   templateUrl: './header.html',
 })
 export class Header {
@@ -19,6 +20,23 @@ export class Header {
 
   // Search bar
   protected isSearchBarOpen = signal(false);
+
+  private translate = inject(TranslateService);
+
+  constructor() {
+    this.translate.addLangs(['en', 'es']);
+    this.translate.setDefaultLang('en');
+    const browserLang = this.translate.getBrowserLang();
+    const langToUse = browserLang && this.translate.getLangs().includes(browserLang) ? browserLang : 'en';
+    this.translate.use(langToUse);
+
+  }
+
+  currentLanguage = this.translate.currentLang;
+  changeLanguage() {
+    const language = this.translate.currentLang === 'en' ? 'es' : 'en';
+    this.translate.use(language);
+  }
 
   protected readonly itemsMoviesNav: subMenuItem[] = [
     { name: 'Trending', url: '#' },

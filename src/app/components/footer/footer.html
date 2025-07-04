@@ -1,1 +1,67 @@
-<p>footer works!</p>
+<footer class="bg-base-light dark:bg-base-dark border-t border-crust-light dark:border-crust-dark px-6 pt-12 pb-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Navegación principal -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <h3 class="text-lg font-bold text-text-light dark:text-text-dark mb-4">{{ 'footer.movies' | translate }}</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.popularMovies' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.topRatedMovies' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.upcomingMovies' | translate }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-text-light dark:text-text-dark mb-4">{{ 'footer.series' | translate }}</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.popularSeries' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.topRatedSeries' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.airingToday' | translate }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-text-light dark:text-text-dark mb-4">{{ 'footer.streaming' | translate }}</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.netflix' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.disney' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.amazon' | translate }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-text-light dark:text-text-dark mb-4">{{ 'footer.contact' | translate }}</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.help' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.about' | translate }}</a></li>
+          <li><a href="#" class="text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark text-sm">{{ 'footer.terms' | translate }}</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Línea divisoria -->
+    <div class="my-10 border-t border-crust-light dark:border-crust-dark"></div>
+
+    <!-- Subfooter inferior -->
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <!-- Created by -->
+      <div class="px-4 py-2 rounded-xl border border-crust-light dark:border-crust-dark text-sm text-subtext0-light dark:text-subtext0-dark">
+        Created by Franki and Ramiro
+      </div>
+
+      <!-- GitHub links -->
+      <div class="flex items-center space-x-4">
+        <a href="https://github.com/FrankiNarvaez/movie-vault-app" target="_blank" rel="noopener" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-crust-light dark:border-crust-dark text-sm text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark">
+          <i class="fa-brands fa-github"></i>
+          Movie app
+        </a>
+        <a href="https://github.com/FrankiNarvaez/movie-vault-server" target="_blank" rel="noopener" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-crust-light dark:border-crust-dark text-sm text-subtext0-light dark:text-subtext0-dark hover:text-blue-light dark:hover:text-blue-dark">
+          <i class="fa-brands fa-github"></i>
+          Movie server
+        </a>
+      </div>
+    </div>
+
+    <!-- Derechos -->
+    <p class="mt-6 text-center text-xs text-subtext0-light dark:text-subtext0-dark">
+      {{ 'footer.rights' | translate }}
+    </p>
+  </div>
+</footer>

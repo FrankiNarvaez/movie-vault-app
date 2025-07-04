@@ -2,9 +2,10 @@
   <nav
     class="mx-auto flex max-w-7xl items-center justify-between h-16 px-2 md:px-8"
   >
+   <!-- Logo -->  
     <div class="flex md:flex-1">
       <a href="#" class="-m-1.5 p-1.5">
-        <span class="sr-only">Movie vault</span>
+        <span class="sr-only">{{ 'header.appName' | translate }}</span>
         <img
           class="h-8 w-auto"
           src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
@@ -13,6 +14,7 @@
       </a>
     </div>
 
+    <!-- Navegación principal -->
     <div class="hidden md:flex md:gap-x-12">
       <ul
         class="flex [&>li]:px-4 [&>li]:py-1 [&>li]:hover:bg-crust-light [&>li]:dark:hover:bg-crust-dark [&>li]:hover:rounded-xl"
@@ -25,7 +27,7 @@
           <div
             class="flex items-center space-x-2 text-text-light dark:text-text-dark font-semibold"
           >
-            <span>Movies</span>
+            <span>{{ 'header.nav.movies' | translate }}</span>
             <i class="fa-solid fa-chevron-down"></i>
           </div>
           @if (isMoviesMenuOpen()) {
@@ -55,7 +57,7 @@
           <div
             class="flex items-center space-x-2 text-text-light dark:text-text-dark font-semibold"
           >
-            <span>Series</span>
+            <span>{{ 'header.nav.series' | translate }}</span>
             <i class="fa-solid fa-chevron-down"></i>
           </div>
           @if (isSeriesMenuOpen()) {
@@ -85,7 +87,7 @@
           <div
             class="flex items-center space-x-2 text-text-light dark:text-text-dark font-semibold"
           >
-            <span>Streaming</span>
+            <span>{{ 'header.nav.streaming' | translate }}</span>
             <i class="fa-solid fa-chevron-down"></i>
           </div>
           @if (isStreamingMenuOpen()) {
@@ -111,33 +113,51 @@
     </div>
 
     <div class="flex flex-1 justify-end items-center space-x-2">
+      <!-- Botón de búsqueda -->
       <button
         class="text-text-light dark:text-text-dark"
         (click)="toggleSearchBar()"
       >
         <i class="fa-solid fa-magnifying-glass"></i>
       </button>
+
+      <!-- Selector de idioma -->
+      <button
+        (click)="changeLanguage()"
+        class="flex items-center gap-2 px-4 py-2 rounded-full border border-crust-light dark:border-crust-dark text-subtext0-light dark:text-subtext0-dark hover:bg-mantle-light dark:hover:bg-mantle-dark transition-all duration-200 ease-in-out"
+        aria-label="Cambiar idioma"
+      >
+        <i class="fa-solid fa-language text-lg"></i>
+        <span class="text-sm font-medium">{{ currentLanguage === 'es' ? 'ES' : 'EN' }}</span>
+      </button>
+
+      <!-- Botón login -->
       <a
         href="#"
         class="py-1.5 px-3 text-sm font-bold text-text-light dark:text-text-dark focus:outline-none bg-mantle-light dark:bg-mantle-dark rounded-lg border border-crust-light dark:border-crust-dark hover:bg-crust-light dark:hover:bg-crust-dark hover:text-blue-light dark:hover:text-blue-dark focus:z-10 focus:ring-4 focus:ring-crust-light dark:focus:ring-crust-dark"
-        >Log in</a
+        >{{ 'header.nav.login' | translate }}</a
       >
+
+      <!-- Botón signup -->
       <a
         href="#"
         class="focus:outline-none text-base-light dark:text-base-dark bg-blue-light dark:bg-blue-dark hover:bg-sapphire-light dark:hover:bg-sapphire-dark focus:ring-4 focus:ring-sky-light dark:focus:ring-sky-dark font-bold rounded-lg text-sm px-3 py-1.5"
-        >Sign up</a
+        >{{ 'header.nav.signup' | translate }}</a
       >
+
+      <!-- Menú móvil -->
       <div class="flex md:hidden">
         <button
           type="button"
           class="py-2 px-3 inline-flex items-center justify-center rounded-md text-text-light dark:text-text-dark bg-mantle-light dark:bg-mantle-dark border border-crust-light dark:border-crust-dark hover:bg-crust-light dark:hover:bg-crust-dark"
           (click)="openMovilMenu()"
         >
-          <span class="sr-only">Open main menu</span>
+          <span class="sr-only">{{ 'header.nav.openMenu' | translate }}</span>
           <i class="fa-solid fa-bars"></i>
         </button>
       </div>
     </div>
+
   </nav>
 
   @if (isMovilMenuOpen()) {
@@ -150,7 +170,7 @@
     >
       <div class="flex items-center justify-between">
         <a href="#" class="-m-1.5 p-1.5">
-          <span class="sr-only">Movie vault</span>
+          <span class="sr-only">{{ 'header.appName' | translate }}</span>
           <img
             class="h-8 w-auto"
             src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
@@ -162,7 +182,7 @@
           class="-m-2.5 rounded-md p-2.5 text-text-light dark:text-text-dark"
           (click)="closeMovilMenu()"
         >
-          <span class="sr-only">Close menu</span>
+          <span class="sr-only">{{ 'header.nav.closeMenu' | translate }}</span>
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
@@ -173,7 +193,7 @@
             <div
               class="flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-text-light dark:text-text-dark hover:bg-crust-light dark:hover:bg-crust-dark"
             >
-              <span>Movies</span>
+              <span>{{ 'header.nav.movies' | translate }}</span>
               <i class="fa-solid fa-chevron-down"></i>
             </div>
             @if (isMoviesMovilMenuOpen()) {
@@ -221,7 +241,7 @@
             <div
               class="flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-text-light dark:text-text-dark hover:bg-crust-light dark:hover:bg-crust-dark"
             >
-              <span>Streaming</span>
+              <span>{{ 'header.nav.streaming' | translate }}</span>
               <i class="fa-solid fa-chevron-down"></i>
             </div>
             @if (isStreamingMovilMenuOpen()) {
@@ -261,21 +281,21 @@
         <select
           class="bg-mantle-light dark:bg-mantle-dark border border-crust-light dark:border-crust-dark text-text-light dark:text-text-dark text-sm rounded-lg block p-1.5"
         >
-          <option value="movies" selected>Movies</option>
-          <option value="series">Series</option>
-          <option value="celebrities">celebrities</option>
+          <option value="movies" selected>{{ 'header.nav.movies' | translate }}</option>
+          <option value="series">{{ 'header.nav.series' | translate }}</option>
+          <option value="celebrities">{{ 'header.nav.search.celebrities' | translate }}</option>
         </select>
         <div class="relative">
           <input
             class="w-full bg-transparent placeholder:text-subtext0-light dark:placeholder:text-subtext0-dark text-text-light dark:text-text-dark text-sm border border-crust-light dark:border-crust-dark rounded-md pl-3 pr-28 py-2 transition duration-300 ease focus:outline-none focus:border-blue-light dark:focus:border-blue-dark hover:border-sapphire-light dark:hover:border-sapphire-dark shadow-sm focus:shadow"
-            placeholder="Movies, series & celebrities..."
+            placeholder="{{ 'header.nav.searchPlaceholder' | translate }}"
           />
           <button
             class="absolute top-1 right-1 flex items-center rounded bg-blue-light dark:bg-blue-dark py-1 px-2.5 border border-transparent text-center text-sm text-base-light dark:text-base-dark transition-all shadow-sm hover:shadow focus:bg-sapphire-light dark:focus:bg-sapphire-dark focus:shadow-none active:bg-lavender-light dark:active:bg-lavender-dark hover:bg-sapphire-light dark:hover:bg-sapphire-dark active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
             type="button"
           >
             <i class="fa-solid fa-magnifying-glass"></i>
-            Search
+            <span class="sr-only">{{ 'header.nav.searchButton' | translate }}</span>
           </button>
         </div>
       </form>
@@ -284,7 +304,7 @@
         class="-m-2.5 rounded-md p-2.5 text-text-light dark:text-text-dark"
         (click)="toggleSearchBar()"
       >
-        <span class="sr-only">Close menu</span>
+        <span class="sr-only">{{ 'header.nav.closeMenu' | translate }}</span>
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>

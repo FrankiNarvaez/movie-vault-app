@@ -1,0 +1,43 @@
+{
+  "greeting": "Hola, bienvenido a Movie Vault",
+  "footer": {
+    "movies": "Películas",
+    "popularMovies": "Películas populares",
+    "topRatedMovies": "Películas mejor valoradas",
+    "upcomingMovies": "Próximos estrenos",
+
+    "series": "Series",
+    "popularSeries": "Series populares",
+    "topRatedSeries": "Series mejor valoradas",
+    "airingToday": "En emisión hoy",
+
+    "streaming": "Streaming",
+    "netflix": "Netflix",
+    "disney": "Disney+",
+    "amazon": "Amazon Prime",
+
+    "contact": "Contacto",
+    "help": "Ayuda",
+    "about": "Acerca de nosotros",
+    "terms": "Términos y condiciones",
+
+    "rights": "Todos los derechos reservados ©2025"
+  },
+  "header": {
+    "appName": "Movie Vault",
+    "nav": {
+      "movies": "Películas",
+      "series": "Series",
+      "streaming": "Streaming",
+      "searchPlaceholder": "Películas, series y celebridades...",
+      "searchButton": "Buscar",
+      "login": "Iniciar sesión",
+      "signup": "Registrarse",
+      "openMenu": "Abrir menú principal",
+      "closeMenu": "Cerrar menú",
+      "search": {
+        "celebrities": "Celebridades"
+      }
+    }
+  }
+}
