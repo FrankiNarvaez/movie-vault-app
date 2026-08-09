@@ -1,11 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 export const Context = createContext();
-
-export const useGlobalState = () => {
-  const context = useContext(Context);
-  return context;
-};
 
 export const StateContext = ({ children }) => {
   const [searchType, setSearchType] = useState("movie");

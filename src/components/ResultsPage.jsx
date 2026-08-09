@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../context/stateContext";
-import axios from "axios";
+import { usePagination } from "../hooks/usePagination";
+import {
+  discoverByGenres,
+  fetchSearchResults,
+  getImageUrl,
+} from "../service/tmdbApi";
 
 import "../styles/ResultsPage.css";
 
-const constant_genres = [
+const GENRES = [
   { id: 28, name: "Action" },
   { id: 12, name: "Adventure" },
   { id: 16, name: "Animation" },
@@ -27,107 +32,82 @@ const constant_genres = [
   { id: 37, name: "Western" },
 ];
 
-const API_KEY = "fbd275a080fd3aac51146bb6a6946f33";
-const BASE_URL = "https://api.themoviedb.org/3";
-
-const tmdbApi = axios.create({
-  baseURL: BASE_URL,
-  params: {
-    api_key: API_KEY,
-  },
-});
+const ITEMS_PER_VIEW = 9;
 
 function ResultsPage() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
-
-  const [index, setIndex] = useState(0);
-  const [page, setPage] = useState(1);
   const [genre, setGenre] = useState("");
+  const {
+    index,
+    page,
+    nextPage,
+    previousPage,
+    syncPage,
+    reset,
+    hasNext,
+    hasPrevious,
+  } = usePagination(ITEMS_PER_VIEW);
 
-  const { searchType, setSearchType, query, setQuery, id, setId } =
-    useStateContext();
+  const { searchType, query, setId } = useStateContext();
+
+  // A new search means a new result list, so pagination starts over.
+  useEffect(() => {
+    reset();
+  }, [searchType, query, reset]);
 
   useEffect(() => {
-    // Fetch movies based on the user's search query
-    const fetchData = async () => {
-      try {
-        const genresParams = getGenres(); // Asume que esto devuelve un string formateado para URL
+    let cancelled = false;
 
-        // Condición para saber si se selecciono un genero
-        if (genre.length > 0) {
-          const response = await tmdbApi.get(`/discover/${searchType}`, {
-            params: {
-              with_genres: genre,
-              page,
-            },
-          });
-          setData(response.data.results);
-          return;
-        } else {
-          const response = await tmdbApi.get(`/search/${searchType}`, {
-            params: {
-              query,
-              page,
-            },
-          });
-          setData(response.data.results);
-        }
+    const loadResults = async () => {
+      try {
+        const response = genre
+          ? await discoverByGenres(searchType, genre, page)
+          : await fetchSearchResults(searchType, query, page);
+
+        if (cancelled) return;
+
+        setData(response.results);
+        syncPage(response);
       } catch (error) {
-        console.error("Error fetching discover results:", error);
-        throw error;
+        console.error("Error fetching results:", error);
       }
     };
 
-    fetchData();
-  }, [index, page, searchType, query, genre]); // Asegúrate de que 'genre' se actualice correctamente en getGenres
+    loadResults();
 
-  function getGenres() {
-    if (genre.length > 0) {
-      return `&with_genres=${genre}`; // &with_genres=1,2
-    } else {
-      return "";
-    }
-  }
-  // Funcion para mostrar los 10 resultados siguientes
-  const nextPage = () => {
-    if (index === 0) {
-      setIndex(index + 9);
-    } else {
-      setPage(page + 1);
-      setIndex(0);
-    }
+    return () => {
+      cancelled = true;
+    };
+  }, [page, searchType, query, genre, syncPage]);
+
+  // Genres are kept as a trailing-comma string because that is the format
+  // TMDB expects for the `with_genres` parameter.
+  const handleSelect = (event) => {
+    const selected = `${event.target.value},`;
+
+    setGenre((current) =>
+      current.includes(selected)
+        ? current.replace(selected, "")
+        : current + selected
+    );
+    reset();
   };
 
-  // Funcion para mostrar los 10 resultados anteriores
-  const previousPage = () => {
-    if (page === 1 && index === 0) {
-      return;
-    } else if (index === 9) {
-      setIndex(index - 9);
-    } else {
-      setPage(page - 1);
-      setIndex(9);
-    }
+  const selectedGenres = genre.split(",").filter(Boolean);
+  const visibleData = data.slice(index, index + ITEMS_PER_VIEW);
+
+  const handleResultClick = (element) => {
+    setId(element.id);
+    navigate(`/${searchType}/${element.id}`);
   };
 
-  // Manejar el seleccionardor para obtener el genero
-  const handleSelect = (e) => {
-    if (genre.includes(e.target.value + ",")) {
-      setGenre(genre.replace(e.target.value + ",", ""));
-      return;
-    }
-
-    setGenre(genre + e.target.value + ",");
-  };
-
-  const newData = data.slice(index, index + 9);
   return (
-    <div className="">
+    <div>
       <div className="select-genre">
         <h4>Seleccione el genero:</h4>
         <select onClick={handleSelect}>
-          {constant_genres.map((element) => (
+          {GENRES.map((element) => (
             <option key={element.id} value={element.id}>
               {element.name}
             </option>
@@ -137,49 +117,48 @@ function ResultsPage() {
       <div className="selected-genres">
         <span>Generos seleccionados: </span>
         <div className="selected">
-          {genre.split(",").map((element) => {
-            if (element === "") return;
-            return (
-              <p key={element}>
-                {
-                  constant_genres.find(
-                    (genre) => genre.id === parseInt(element)
-                  ).name
-                }
-              </p>
-            );
-          })}
+          {selectedGenres.map((genreId) => (
+            <p key={genreId}>
+              {GENRES.find((item) => item.id === Number(genreId))?.name}
+            </p>
+          ))}
         </div>
       </div>
       <div className="main-container-result-page">
         <div className="movie-result-page">
-          {newData.map((element) => (
+          {visibleData.map((element) => (
             <div key={element.id} className="movie">
               <img
                 className="movie-images"
                 src={
-                  `https://image.tmdb.org/t/p/w300${element.poster_path}` +
-                  `https://image.tmdb.org/t/p/w300${element.profile_path}`
+                  getImageUrl(element.poster_path) ||
+                  getImageUrl(element.profile_path)
                 }
                 alt={element.title}
-                onClick={() => (
-                  setId(element.id), navigate(`/${searchType}/${element.id}`)
-                )}
+                onClick={() => handleResultClick(element)}
               />
               <div className="info-container">
-                <h3>{element.title}</h3>
+                <h3>{element.title || element.name}</h3>
                 <p>{element.release_date}</p>
               </div>
-              <p className="title">{element.title}</p>
+              <p className="title">{element.title || element.name}</p>
             </div>
           ))}
         </div>
       </div>
       <div className="button-change-page">
-        <button className="previousPage button" onClick={previousPage}>
+        <button
+          className="previousPage button"
+          onClick={previousPage}
+          disabled={!hasPrevious}
+        >
           previous
         </button>
-        <button className="nextPage button" onClick={nextPage}>
+        <button
+          className="nextPage button"
+          onClick={nextPage}
+          disabled={!hasNext}
+        >
           next
         </button>
       </div>
