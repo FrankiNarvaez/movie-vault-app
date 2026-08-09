@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../hooks/useStateContext";
 import { useTrending } from "../hooks/useTrending";
 import { getImageUrl } from "../service/tmdbApi";
+import type { MediaSummary } from "../types/tmdb";
 
 import "../styles/Celebrities.css";
 
@@ -9,14 +10,13 @@ const ITEMS_PER_VIEW = 4;
 
 const TrendingPeoplePreview = () => {
   const navigate = useNavigate();
-  const { setSearchType, setId } = useStateContext();
+  const { setSearchType } = useStateContext();
   const { items, nextPage, previousPage, hasNext, hasPrevious } = useTrending(
     "person",
     ITEMS_PER_VIEW
   );
 
-  const handlePersonClick = (person) => {
-    setId(person.id);
+  const handlePersonClick = (person: MediaSummary) => {
     setSearchType("person");
     navigate(`/person/${person.id}`);
   };

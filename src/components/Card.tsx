@@ -1,6 +1,21 @@
+import type { Dispatch, SetStateAction } from "react";
+import type { NavigateFunction } from "react-router-dom";
 import Star from "../assets/rating-star.svg";
 import { getImageUrl } from "../service/tmdbApi";
+import type { MediaSummary, MediaType } from "../types/tmdb";
 import "../styles/Cards.css";
+
+interface CardProps {
+  cards: MediaSummary[];
+  nextPage: () => void;
+  previousPage: () => void;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  setSearchType: Dispatch<SetStateAction<MediaType>>;
+  navigate: NavigateFunction;
+  type: MediaType;
+  message: string;
+}
 
 export default function Card({
   cards,
@@ -8,14 +23,12 @@ export default function Card({
   previousPage,
   hasNext,
   hasPrevious,
-  setId,
   setSearchType,
   navigate,
   type,
   message,
-}) {
-  const handleCardClick = (card) => {
-    setId(card.id);
+}: CardProps) {
+  const handleCardClick = (card: MediaSummary) => {
     setSearchType(type);
     navigate(`/${type}/${card.id}`);
   };
@@ -30,7 +43,7 @@ export default function Card({
               <img
                 className="movie-img"
                 src={getImageUrl(card.poster_path)}
-                alt={card.name}
+                alt={card.title ?? card.name}
                 onClick={() => handleCardClick(card)}
               />
               <div className="rating">

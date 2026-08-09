@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../hooks/useStateContext";
 import { usePagination } from "../hooks/usePagination";
@@ -7,10 +8,11 @@ import {
   fetchSearchResults,
   getImageUrl,
 } from "../service/tmdbApi";
+import type { Genre, MediaSummary } from "../types/tmdb";
 
 import "../styles/ResultsPage.css";
 
-const GENRES = [
+const GENRES: Genre[] = [
   { id: 28, name: "Action" },
   { id: 12, name: "Adventure" },
   { id: 16, name: "Animation" },
@@ -36,7 +38,7 @@ const ITEMS_PER_VIEW = 9;
 
 function ResultsPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<MediaSummary[]>([]);
   const [genre, setGenre] = useState("");
   const {
     index,
@@ -49,7 +51,7 @@ function ResultsPage() {
     hasPrevious,
   } = usePagination(ITEMS_PER_VIEW);
 
-  const { searchType, query, setId } = useStateContext();
+  const { searchType, query } = useStateContext();
 
   // A new search means a new result list, so pagination starts over.
   useEffect(() => {
@@ -82,9 +84,10 @@ function ResultsPage() {
   }, [page, searchType, query, genre, syncPage]);
 
   // Genres are kept as a trailing-comma string because that is the format
-  // TMDB expects for the `with_genres` parameter.
-  const handleSelect = (event) => {
-    const selected = `${event.target.value},`;
+  // TMDB expects for the `with_genres` parameter. The handler is on click
+  // rather than change so clicking an already selected genre removes it.
+  const handleSelect = (event: MouseEvent<HTMLSelectElement>) => {
+    const selected = `${event.currentTarget.value},`;
 
     setGenre((current) =>
       current.includes(selected)
@@ -97,8 +100,7 @@ function ResultsPage() {
   const selectedGenres = genre.split(",").filter(Boolean);
   const visibleData = data.slice(index, index + ITEMS_PER_VIEW);
 
-  const handleResultClick = (element) => {
-    setId(element.id);
+  const handleResultClick = (element: MediaSummary) => {
     navigate(`/${searchType}/${element.id}`);
   };
 
@@ -134,7 +136,7 @@ function ResultsPage() {
                   getImageUrl(element.poster_path) ||
                   getImageUrl(element.profile_path)
                 }
-                alt={element.title}
+                alt={element.title ?? element.name}
                 onClick={() => handleResultClick(element)}
               />
               <div className="info-container">

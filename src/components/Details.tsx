@@ -3,27 +3,36 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useStateContext } from "../hooks/useStateContext";
 import { usePagination } from "../hooks/usePagination";
 import { fetchDetails, fetchSimilar, getImageUrl } from "../service/tmdbApi";
+import { isMediaType } from "../types/tmdb";
+import type { MediaDetails, MediaSummary, MediaType } from "../types/tmdb";
 import Star from "../assets/rating-star.svg";
 
 import "../styles/Details.css";
 
 const ITEMS_PER_VIEW = 4;
-const VALID_TYPES = ["movie", "tv", "person"];
 
 // TMDB only exposes /similar for movies and TV shows.
-const supportsSimilar = (type) => type === "movie" || type === "tv";
+const supportsSimilar = (type: MediaType) => type === "movie" || type === "tv";
+
+interface SimilarState {
+  source: string | null;
+  results: MediaSummary[];
+}
 
 function DetailsId() {
   // The URL is the source of truth here, so a direct visit or a reload works
   // without depending on state left behind by a previous click.
   const { type, ID } = useParams();
   const navigate = useNavigate();
-  const { setSearchType, setId } = useStateContext();
+  const { setSearchType } = useStateContext();
 
-  const [information, setInformation] = useState(null);
+  const [information, setInformation] = useState<MediaDetails | null>(null);
   // Recommendations carry the request they belong to, so a stale list is
   // simply not rendered instead of being cleared from inside an effect.
-  const [similar, setSimilar] = useState({ source: null, results: [] });
+  const [similar, setSimilar] = useState<SimilarState>({
+    source: null,
+    results: [],
+  });
   const {
     index,
     page,
@@ -35,19 +44,16 @@ function DetailsId() {
     hasPrevious,
   } = usePagination(ITEMS_PER_VIEW);
 
-  const isValidType = VALID_TYPES.includes(type);
-
   // Mirror the URL into the shared state so the search bar stays in sync.
   useEffect(() => {
-    if (!isValidType) return;
+    if (!isMediaType(type)) return;
 
     setSearchType(type);
-    setId(ID);
     reset();
-  }, [type, ID, isValidType, reset, setId, setSearchType]);
+  }, [type, reset, setSearchType]);
 
   useEffect(() => {
-    if (!isValidType || !ID) return;
+    if (!isMediaType(type) || !ID) return;
 
     let cancelled = false;
 
@@ -65,10 +71,10 @@ function DetailsId() {
     return () => {
       cancelled = true;
     };
-  }, [type, ID, isValidType]);
+  }, [type, ID]);
 
   useEffect(() => {
-    if (!isValidType || !ID || !supportsSimilar(type)) return;
+    if (!isMediaType(type) || !ID || !supportsSimilar(type)) return;
 
     let cancelled = false;
 
@@ -89,9 +95,11 @@ function DetailsId() {
     return () => {
       cancelled = true;
     };
-  }, [type, ID, page, isValidType, syncPage]);
+  }, [type, ID, page, syncPage]);
 
-  if (!isValidType) {
+  // Past this guard TypeScript knows `type` is a MediaType and `ID` a string,
+  // so the rest of the component never has to re-check them.
+  if (!isMediaType(type) || !ID) {
     return (
       <div className="details">
         <p>No encontramos ese contenido.</p>
@@ -114,7 +122,7 @@ function DetailsId() {
                 getImageUrl(information.poster_path, "w400") ||
                 getImageUrl(information.profile_path, "w400")
               }
-              alt={information.id}
+              alt={information.title ?? information.name}
             />
           </div>
           <div className="info-container">
@@ -127,7 +135,7 @@ function DetailsId() {
                 ))}
             </div>
             <div className="rating">
-              {[...Array(Math.round(information.vote_average || 0)).keys()].map(
+              {[...Array(Math.round(information.vote_average ?? 0)).keys()].map(
                 (i) => (
                   <img key={i} src={Star} alt="Star of movie rating" />
                 )
@@ -179,7 +187,7 @@ function DetailsId() {
                   <img
                     className="movie-img"
                     src={getImageUrl(recommendation.backdrop_path)}
-                    alt={recommendation.title}
+                    alt={recommendation.title ?? recommendation.name}
                     onClick={() => navigate(`/${type}/${recommendation.id}`)}
                   />
                   <p>{recommendation.title || recommendation.name}</p>

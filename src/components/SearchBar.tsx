@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchSearchResults, getImageUrl } from "../service/tmdbApi";
 import { useStateContext } from "../hooks/useStateContext";
+import { isMediaType } from "../types/tmdb";
+import type { MediaSummary } from "../types/tmdb";
 import logo from "../assets/imdb.png";
 
 import "../styles/SearchBar.css";
@@ -13,14 +16,13 @@ const SearchComponent = () => {
   const navigate = useNavigate();
   const { type, search } = useParams();
 
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<MediaSummary[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const { searchType, setSearchType, query, setQuery, setId } =
-    useStateContext();
+  const { searchType, setSearchType, query, setQuery } = useStateContext();
 
   useEffect(() => {
-    if (type) {
+    if (isMediaType(type)) {
       setSearchType(type);
     }
   }, [type, setSearchType]);
@@ -44,7 +46,7 @@ const SearchComponent = () => {
     return () => clearTimeout(timeoutId);
   }, [query, searchType]);
 
-  const handleSearch = (event) => {
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (query.trim() === "") return;
 
@@ -52,23 +54,28 @@ const SearchComponent = () => {
     navigate(`/search/${searchType}/${query}`);
   };
 
-  const handleResultClick = (result) => {
-    setQuery(result.title || result.name);
+  const handleResultClick = (result: MediaSummary) => {
+    setQuery(result.title || result.name || "");
     setShowDropdown(false);
-    setId(result.id);
     navigate(`/${searchType}/${result.id}`);
   };
 
-  const handleQueryChange = (event) => {
+  const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
     setShowDropdown(true);
+  };
+
+  const handleTypeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    if (isMediaType(event.target.value)) {
+      setSearchType(event.target.value);
+    }
   };
 
   // An empty query has nothing to suggest, so the dropdown list is derived
   // here instead of being cleared from inside the debounce effect.
   const visibleResults = query ? results : [];
 
-  const getResultSuffix = (result) => {
+  const getResultSuffix = (result: MediaSummary) => {
     if (searchType === "person") {
       return result.known_for_department
         ? ` - ${result.known_for_department}`
@@ -89,7 +96,7 @@ const SearchComponent = () => {
           <select
             className="select-button"
             value={searchType}
-            onChange={(event) => setSearchType(event.target.value)}
+            onChange={handleTypeChange}
           >
             <option value="movie">Películas</option>
             <option value="tv">TV Shows</option>
@@ -120,7 +127,7 @@ const SearchComponent = () => {
                   getImageUrl(result.poster_path, "w200") ||
                   getImageUrl(result.profile_path, "w200")
                 }
-                alt={result.title}
+                alt={result.title ?? result.name}
               />{" "}
               {result.title || result.name}
               {getResultSuffix(result)}
