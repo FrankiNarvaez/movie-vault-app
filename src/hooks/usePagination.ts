@@ -20,7 +20,7 @@ export interface Pagination {
  *
  * Each API page is consumed slice by slice before requesting the next one, so
  * no result is skipped. Callers fetch on `page` only, keep the full result
- * array, and slice it with `index` — changing slices never refetches.
+ * array, and slice it with `index`. Changing slices never refetches.
  *
  * After every fetch the caller must report the response through `syncPage` so
  * the hook knows how many items the current page holds and where the list ends.

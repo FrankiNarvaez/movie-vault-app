@@ -1,45 +1,56 @@
-import { useState, useEffect } from "react";
-import type { MouseEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { useStateContext } from "../hooks/useStateContext";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { usePagination } from "../hooks/usePagination";
 import {
   discoverByGenres,
   fetchSearchResults,
   getImageUrl,
 } from "../service/tmdbApi";
-import type { Genre, MediaSummary } from "../types/tmdb";
-
-import "../styles/ResultsPage.css";
+import { isMediaType } from "../types/tmdb";
+import type { Genre, MediaSummary, RequestStatus } from "../types/tmdb";
+import { PosterCard } from "./ui/PosterCard";
+import { Pager } from "./ui/Pager";
+import { PosterSkeletonGrid } from "./ui/Skeleton";
+import { RetryButton, StatusBlock } from "./ui/StatusBlock";
 
 const GENRES: Genre[] = [
-  { id: 28, name: "Action" },
-  { id: 12, name: "Adventure" },
-  { id: 16, name: "Animation" },
-  { id: 35, name: "Comedy" },
-  { id: 80, name: "Crime" },
-  { id: 99, name: "Documentary" },
+  { id: 28, name: "Acción" },
+  { id: 12, name: "Aventura" },
+  { id: 16, name: "Animación" },
+  { id: 35, name: "Comedia" },
+  { id: 80, name: "Crimen" },
+  { id: 99, name: "Documental" },
   { id: 18, name: "Drama" },
-  { id: 10751, name: "Family" },
-  { id: 14, name: "Fantasy" },
-  { id: 36, name: "History" },
-  { id: 27, name: "Horror" },
-  { id: 10402, name: "Music" },
-  { id: 9648, name: "Mystery" },
+  { id: 10751, name: "Familia" },
+  { id: 14, name: "Fantasía" },
+  { id: 36, name: "Historia" },
+  { id: 27, name: "Terror" },
+  { id: 10402, name: "Música" },
+  { id: 9648, name: "Misterio" },
   { id: 10749, name: "Romance" },
-  { id: 878, name: "Science Fiction" },
-  { id: 10770, name: "TV Movie" },
-  { id: 53, name: "Thriller" },
-  { id: 10752, name: "War" },
+  { id: 878, name: "Ciencia ficción" },
+  { id: 10770, name: "Película de TV" },
+  { id: 53, name: "Suspenso" },
+  { id: 10752, name: "Bélica" },
   { id: 37, name: "Western" },
 ];
 
-const ITEMS_PER_VIEW = 9;
+// Twelve fills a 4-column desktop grid in exactly three rows. Nine left the
+// posters oversized because the grid capped out at three columns.
+const ITEMS_PER_VIEW = 12;
 
 function ResultsPage() {
-  const navigate = useNavigate();
+  // Reading the URL directly means a reload or a shared link still works. The
+  // previous version took the query from shared state, which was empty on a
+  // cold load and searched for nothing.
+  const { type, search } = useParams();
+  const searchType = isMediaType(type) ? type : "movie";
+  const query = search ?? "";
+
   const [data, setData] = useState<MediaSummary[]>([]);
-  const [genre, setGenre] = useState("");
+  const [status, setStatus] = useState<RequestStatus>("loading");
+  const [genreIds, setGenreIds] = useState<number[]>([]);
+  const [attempt, setAttempt] = useState(0);
   const {
     index,
     page,
@@ -51,7 +62,7 @@ function ResultsPage() {
     hasPrevious,
   } = usePagination(ITEMS_PER_VIEW);
 
-  const { searchType, query } = useStateContext();
+  const genreParam = genreIds.join(",");
 
   // A new search means a new result list, so pagination starts over.
   useEffect(() => {
@@ -62,17 +73,23 @@ function ResultsPage() {
     let cancelled = false;
 
     const loadResults = async () => {
+      setStatus("loading");
+
       try {
-        const response = genre
-          ? await discoverByGenres(searchType, genre, page)
+        const response = genreParam
+          ? await discoverByGenres(searchType, genreParam, page)
           : await fetchSearchResults(searchType, query, page);
 
         if (cancelled) return;
 
         setData(response.results);
         syncPage(response);
+        setStatus("ready");
       } catch (error) {
+        if (cancelled) return;
+
         console.error("Error fetching results:", error);
+        setStatus("error");
       }
     };
 
@@ -81,90 +98,107 @@ function ResultsPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, searchType, query, genre, syncPage]);
+  }, [page, searchType, query, genreParam, attempt, syncPage]);
 
-  // Genres are kept as a trailing-comma string because that is the format
-  // TMDB expects for the `with_genres` parameter. The handler is on click
-  // rather than change so clicking an already selected genre removes it.
-  const handleSelect = (event: MouseEvent<HTMLSelectElement>) => {
-    const selected = `${event.currentTarget.value},`;
-
-    setGenre((current) =>
-      current.includes(selected)
-        ? current.replace(selected, "")
-        : current + selected
+  const toggleGenre = (id: number) => {
+    setGenreIds((current) =>
+      current.includes(id)
+        ? current.filter((genreId) => genreId !== id)
+        : [...current, id]
     );
     reset();
   };
 
-  const selectedGenres = genre.split(",").filter(Boolean);
   const visibleData = data.slice(index, index + ITEMS_PER_VIEW);
-
-  const handleResultClick = (element: MediaSummary) => {
-    navigate(`/${searchType}/${element.id}`);
-  };
+  const heading = genreParam ? "Filtrado por género" : `Resultados para "${query}"`;
 
   return (
-    <div>
-      <div className="select-genre">
-        <h4>Seleccione el genero:</h4>
-        <select onClick={handleSelect}>
-          {GENRES.map((element) => (
-            <option key={element.id} value={element.id}>
-              {element.name}
-            </option>
-          ))}
-        </select>
+    <main className="mx-auto w-full max-w-7xl px-4 pb-20 pt-10 md:px-8 md:pt-14">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-xl font-semibold tracking-tight text-ink md:text-2xl">
+          {heading}
+        </h1>
+        {status === "ready" && visibleData.length > 0 && (
+          <Pager
+            label="Resultados"
+            onPrevious={previousPage}
+            onNext={nextPage}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+          />
+        )}
       </div>
-      <div className="selected-genres">
-        <span>Generos seleccionados: </span>
-        <div className="selected">
-          {selectedGenres.map((genreId) => (
-            <p key={genreId}>
-              {GENRES.find((item) => item.id === Number(genreId))?.name}
-            </p>
-          ))}
-        </div>
+
+      {/* Toggle chips replace the old <select onClick>, which looked like a
+          single-choice control while behaving like a multi-select. */}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {GENRES.map((genre) => {
+          const isActive = genreIds.includes(genre.id);
+
+          return (
+            <button
+              key={genre.id}
+              type="button"
+              onClick={() => toggleGenre(genre.id)}
+              aria-pressed={isActive}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition duration-200 ease-soft active:scale-95 ${
+                isActive
+                  ? "border-accent bg-accent text-on-accent"
+                  : "border-line text-ink-dim hover:border-line-strong hover:text-ink"
+              }`}
+            >
+              {genre.name}
+            </button>
+          );
+        })}
       </div>
-      <div className="main-container-result-page">
-        <div className="movie-result-page">
-          {visibleData.map((element) => (
-            <div key={element.id} className="movie">
-              <img
-                className="movie-images"
-                src={
-                  getImageUrl(element.poster_path) ||
-                  getImageUrl(element.profile_path)
-                }
-                alt={element.title ?? element.name}
-                onClick={() => handleResultClick(element)}
-              />
-              <div className="info-container">
-                <h3>{element.title || element.name}</h3>
-                <p>{element.release_date}</p>
-              </div>
-              <p className="title">{element.title || element.name}</p>
-            </div>
-          ))}
-        </div>
+
+      <div className="mt-10">
+        {status === "error" ? (
+          <StatusBlock
+            tone="error"
+            title="No pudimos cargar los resultados"
+            description="La consulta a TMDB falló. Revisá la conexión y volvé a intentar."
+            action={<RetryButton onClick={() => setAttempt((n) => n + 1)} />}
+          />
+        ) : status === "ready" && visibleData.length === 0 ? (
+          <StatusBlock
+            tone="empty"
+            title="Sin resultados"
+            description={
+              genreParam
+                ? "Ningún título coincide con esa combinación de géneros. Probá quitando alguno."
+                : "No encontramos nada con ese término. Probá con otras palabras o cambiá el tipo de búsqueda."
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 md:gap-6">
+            {status === "loading" ? (
+              <PosterSkeletonGrid count={ITEMS_PER_VIEW} />
+            ) : (
+              visibleData.map((element, position) => (
+                <PosterCard
+                  key={element.id}
+                  to={`/${searchType}/${element.id}`}
+                  title={element.title || element.name || "Sin título"}
+                  imageUrl={getImageUrl(
+                    element.poster_path || element.profile_path
+                  )}
+                  meta={
+                    element.release_date
+                      ? element.release_date.split("-")[0]
+                      : undefined
+                  }
+                  rating={element.vote_average}
+                  shape={searchType === "person" ? "portrait" : "poster"}
+                  enterIndex={position}
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
-      <div className="button-change-page">
-        <button
-          className="previousPage button"
-          onClick={previousPage}
-          disabled={!hasPrevious}
-        >
-          previous
-        </button>
-        <button
-          className="nextPage button"
-          onClick={nextPage}
-          disabled={!hasNext}
-        >
-          next
-        </button>
-      </div>
-    </div>
+    </main>
   );
 }
 

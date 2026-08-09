@@ -5,17 +5,17 @@ import Home from "./components/Home";
 import Filter from "./pages/Filter";
 import { StateProvider } from "./context/StateProvider";
 
-import "./App.css";
-
 function App() {
   return (
     <StateProvider>
-      <SearchBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/search/:type/:search" element={<Filter />} />
-        <Route path="/:type/:ID" element={<DetailsId />} />
-      </Routes>
+      <div className="scrollbar-brand min-h-[100dvh] bg-canvas">
+        <SearchBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/search/:type/:search" element={<Filter />} />
+          <Route path="/:type/:ID" element={<DetailsId />} />
+        </Routes>
+      </div>
     </StateProvider>
   );
 }

@@ -1,6 +1,10 @@
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+
+// Self-hosted through Fontsource, so the app makes no request to a font CDN.
+import "@fontsource-variable/geist";
+import "./index.css";
 
 const rootElement = document.getElementById("root");
 

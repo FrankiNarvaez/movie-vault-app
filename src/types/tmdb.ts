@@ -42,6 +42,9 @@ export interface MediaDetails extends MediaSummary {
   also_known_as?: string[];
 }
 
+/** Lifecycle of a single request, so the UI can show real loading and error states. */
+export type RequestStatus = "loading" | "error" | "ready";
+
 export interface PaginatedResponse<T> {
   page: number;
   results: T[];
