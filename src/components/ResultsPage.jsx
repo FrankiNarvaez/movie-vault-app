@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStateContext } from "../context/stateContext";
+import { useStateContext } from "../hooks/useStateContext";
 import { usePagination } from "../hooks/usePagination";
 import {
   discoverByGenres,

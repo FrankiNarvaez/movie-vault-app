@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchSearchResults, getImageUrl } from "../service/tmdbApi";
-import { useStateContext } from "../context/stateContext";
+import { useStateContext } from "../hooks/useStateContext";
 import logo from "../assets/imdb.png";
 
 import "../styles/SearchBar.css";
@@ -23,18 +23,14 @@ const SearchComponent = () => {
     if (type) {
       setSearchType(type);
     }
-  }, [type]);
+  }, [type, setSearchType]);
 
   useEffect(() => {
     setQuery(search ?? "");
-  }, [search]);
+  }, [search, setQuery]);
 
   useEffect(() => {
-    if (!query) {
-      setResults([]);
-      setShowDropdown(false);
-      return;
-    }
+    if (!query) return;
 
     const timeoutId = setTimeout(async () => {
       try {
@@ -67,6 +63,10 @@ const SearchComponent = () => {
     setQuery(event.target.value);
     setShowDropdown(true);
   };
+
+  // An empty query has nothing to suggest, so the dropdown list is derived
+  // here instead of being cleared from inside the debounce effect.
+  const visibleResults = query ? results : [];
 
   const getResultSuffix = (result) => {
     if (searchType === "person") {
@@ -110,9 +110,9 @@ const SearchComponent = () => {
         </div>
       </form>
 
-      {showDropdown && results.length > 0 && (
+      {showDropdown && visibleResults.length > 0 && (
         <ul className="search-dropdown">
-          {results.map((result) => (
+          {visibleResults.map((result) => (
             <li key={result.id} onClick={() => handleResultClick(result)}>
               <img
                 className="a"

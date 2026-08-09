@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useStateContext } from "../context/stateContext";
+import { useStateContext } from "../hooks/useStateContext";
 import { usePagination } from "../hooks/usePagination";
 import { fetchDetails, fetchSimilar, getImageUrl } from "../service/tmdbApi";
 import Star from "../assets/rating-star.svg";
@@ -21,7 +21,9 @@ function DetailsId() {
   const { setSearchType, setId } = useStateContext();
 
   const [information, setInformation] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
+  // Recommendations carry the request they belong to, so a stale list is
+  // simply not rendered instead of being cleared from inside an effect.
+  const [similar, setSimilar] = useState({ source: null, results: [] });
   const {
     index,
     page,
@@ -66,10 +68,7 @@ function DetailsId() {
   }, [type, ID, isValidType]);
 
   useEffect(() => {
-    if (!isValidType || !ID || !supportsSimilar(type)) {
-      setRecommendations([]);
-      return;
-    }
+    if (!isValidType || !ID || !supportsSimilar(type)) return;
 
     let cancelled = false;
 
@@ -78,7 +77,7 @@ function DetailsId() {
         const data = await fetchSimilar(type, ID, page);
         if (cancelled) return;
 
-        setRecommendations(data.results);
+        setSimilar({ source: `${type}/${ID}/${page}`, results: data.results });
         syncPage(data);
       } catch (error) {
         console.error("Error fetching recommendations:", error);
@@ -100,10 +99,10 @@ function DetailsId() {
     );
   }
 
-  const visibleRecommendations = recommendations.slice(
-    index,
-    index + ITEMS_PER_VIEW
-  );
+  const visibleRecommendations =
+    similar.source === `${type}/${ID}/${page}`
+      ? similar.results.slice(index, index + ITEMS_PER_VIEW)
+      : [];
 
   return (
     <div className="details">
